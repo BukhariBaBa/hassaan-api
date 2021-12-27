@@ -21,6 +21,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->string('fcm_token')->nullable();
             $table->string('auth_token')->nullable();
+            $table->text('photo')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

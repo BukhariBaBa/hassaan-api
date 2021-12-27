@@ -23,4 +23,10 @@ Route::post('register',[UserController::class,'register']);
 Route::post('login',[UserController::class,'login']);
 Route::post('update-password',[UserController::class,'update_password']);
 Route::get('subscriptions',[UserController::class,'subscriptions']);
+Route::post('update-profile',[UserController::class,'update_profile']);
+Route::post('update-fcm',[UserController::class,'update_fcm']);
+Route::post('get-profile',[UserController::class,'get_profile']);
+Route::post('get-fcm',[UserController::class,'get_fcm']);
+Route::post('send-verifiaction-pin',[UserController::class,'send_verification_pin']);
+Route::post('set-new-password',[UserController::class,'set_new_password']);
 
