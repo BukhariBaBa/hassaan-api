@@ -99,7 +99,6 @@ class UserController extends Controller
         }
         $userModel = User::find($params['user_id']);
         if (!empty($userModel)) {
-            $userModel = new User();
             $userModel->name = $params['name'];
             $userModel->email = $params['email'];
             if(!empty($imageName))
@@ -116,7 +115,6 @@ class UserController extends Controller
         $params = $request->all();
         $userModel = User::find($params['user_id']);
         if (!empty($userModel)) {
-            $userModel = new User();
             $userModel->fcm_token = $params['fcm'];
             $userModel->save();
             return response([ 'status' =>'success','message' => 'User FCM Updated!' ], 200);
