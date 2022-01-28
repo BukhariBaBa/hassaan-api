@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\VerificationPin;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Models\UserSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -25,7 +26,7 @@ class UserController extends Controller
         ];
         $validator = Validator::make($request->all(),$rules);
         if ($validator->fails()) {
-            return response([ 'status' =>'failed','message' => $validator->messages() ], 200);
+            return response([ 'status' =>'failed','message' => 'This email already registered' ], 200);
         }else{
             $params = $request->all();
             $imageName = NULL;
@@ -54,9 +55,13 @@ class UserController extends Controller
 
         if(Auth::attempt(['email'=>$params['email'],'password'=>$params['password']]))
         {
+            if(Auth::user()->status == "inactive"){
+                return response([ 'status' =>'failed','message'=>'User account disabled' ], 200);
+            }
             $user['user_id']    = Auth::user()->id;
             $user['name']       = Auth::user()->name;
             $user['email']      = Auth::user()->email;
+            $user['subscriber'] = Auth::user()->subscriber;
             return response([ 'status' =>'success','data'=>$user ], 200);
         }
         return response([ 'status' =>'failed','message'=>'Invalid login details' ], Response::HTTP_UNAUTHORIZED);
@@ -130,7 +135,7 @@ class UserController extends Controller
             $data['name'] = $userModel->name;
             $data['email'] = $userModel->email;
             $data['photo'] = URL::to('/uploads/'.$userModel->photo);
-            return response([ 'status' =>'success','message' => 'User FCM Updated!','data'=>$userModel ], 200);
+            return response([ 'status' =>'success','data'=>$data ], 200);
         }else{
             return response([ 'status' =>'failed','message' => 'User Not Found' ], Response::HTTP_UNAUTHORIZED);
         }
@@ -140,7 +145,7 @@ class UserController extends Controller
         $params = $request->all();
         $userModel = User::find($params['user_id']);
         if (!empty($userModel)) {
-            return response([ 'status' =>'success','message' => 'User FCM Updated!','fcm'=>$userModel->fcm_token ], 200);
+            return response([ 'status' =>'success','fcm'=>$userModel->fcm_token ], 200);
         }else{
             return response([ 'status' =>'failed','message' => 'User Not Found' ], Response::HTTP_UNAUTHORIZED);
         }
@@ -170,7 +175,7 @@ class UserController extends Controller
         $params = $request->all();
         $userModel = User::where(['email'=>$params['email']])->first();
         if(!empty($userModel)){
-            $userModel->password = Hash::make($params['new_password']);
+            $userModel->password = Hash::make($params['password']);
             $userModel->save();
             return response([ 'status' =>'success','message'=>'Password reset successfully!' ], 200);
         }else{
@@ -178,7 +183,49 @@ class UserController extends Controller
         }
     }
 
+    public function disabled_account(Request $request)
+    {
+        $params = $request->all();
+        $userModel = User::where(['id'=>$params['user_id']])->first();
+        if(!empty($userModel)){
+            $userModel->status = 'inactive';
+            $userModel->save();
+            return response([ 'status' =>'success','message'=>'User Account disbaled successfully!' ], 200);
+        }else{
+            return response([ 'status' =>'failed','message' => 'This Email is not Registered' ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+    public function enable_account(Request $request)
+    {
+        $params = $request->all();
+        $userModel = User::where(['id'=>$params['user_id']])->first();
+        if(!empty($userModel)){
+            $userModel->status = 'active';
+            $userModel->save();
+            return response([ 'status' =>'success','message'=>'User Account activated successfully!' ], 200);
+        }else{
+            return response([ 'status' =>'failed','message' => 'This Email is not Registered' ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
 
+    public function user_subscribe(Request $request)
+    {
+        $params = $request->all();
 
+        try {
+            $userSubscribe = new UserSubscription();
+            $userSubscribe->user_id = $params['user_id'];
+            $userSubscribe->subscription_id = $params['subscription_id'];
+            $userSubscribe->save();
+            $userModel = User::find($params['user_id']);
+            if(!empty($userModel)){
+                $userModel->subscriber = 'yes';
+                $userModel->save();
+            }
+            return response([ 'status' =>'success','message'=>'User subscribed successfully!' ], 200);
+        } catch (\Throwable $th) {
+            return response([ 'status' =>'failed','message' => 'ERROR: '.$th->getMessage() ], 200);
+        }
+    }
 
 }

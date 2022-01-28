@@ -29,4 +29,7 @@ Route::post('get-profile',[UserController::class,'get_profile']);
 Route::post('get-fcm',[UserController::class,'get_fcm']);
 Route::post('send-verifiaction-pin',[UserController::class,'send_verification_pin']);
 Route::post('set-new-password',[UserController::class,'set_new_password']);
+Route::post('disable-account',[UserController::class,'disabled_account']);
+Route::post('enable-account',[UserController::class,'enable_account']);
+Route::post('user-subscribe',[UserController::class,'user_subscribe']);
 

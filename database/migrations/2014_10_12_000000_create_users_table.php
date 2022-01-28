@@ -22,6 +22,8 @@ class CreateUsersTable extends Migration
             $table->string('fcm_token')->nullable();
             $table->string('auth_token')->nullable();
             $table->text('photo')->nullable();
+            $table->enum('status',['active','inactive'])->default('active');
+            $table->enum('subscriber',['yes','no'])->default('no');
             $table->rememberToken();
             $table->timestamps();
         });
